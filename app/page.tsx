@@ -1,7 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import BackgroundStars from '../components/BackgroundStars';
-import CenterGlow from '../components/CenterGlow';
+
 import Chat from '../components/Chat';
 
 export default function HomePage() {
