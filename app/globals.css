@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth scroll & selection */
+html { scroll-behavior: smooth; }
+::selection { background: #1aa9ff33; }
+
+/* Fancy text gradient */
+.gradient-text {
+  background: linear-gradient(90deg, #49c1ff, #a78bfa, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Neon glass + animated gradient helpers */
+.glass {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.animated-gradient {
+  background: linear-gradient(120deg, #49c1ff, #a78bfa, #22d3ee, #49c1ff);
+  background-size: 300% 300%;
+  animation: gradientMove 8s ease-in-out infinite;
+  border-radius: 1.5rem;
+  box-shadow: 0 0 24px rgba(73,193,255,0.25);
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50% }
+  50%{ background-position: 100% 50% }
+  100%{background-position: 0% 50% }
+}
+
+/* nicer scrollbar (optional) */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-thumb { background: #1aa9ff55; border-radius: 10px; }
