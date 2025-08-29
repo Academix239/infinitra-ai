@@ -17,7 +17,7 @@ export default function Chat() {
     }
     return [
       {
-        role: 'assistant',
+        role: 'assistant' as const,
         content:
           'Namaste! Main aapka AI guide hoon — atom se universe tak sabka gyaan. Kuch bhi poochiye ✨',
       },
@@ -54,16 +54,16 @@ export default function Chat() {
     return () => clearTimeout(cdTimer.current);
   }, [cooldown]);
 
-  const truncate = (arr: Msg[], max = 10) => arr.slice(-max); // simple token-safe
+  const truncate = (arr: Msg[], max = 10) => arr.slice(-max);
 
   const send = async () => {
     const text = input.trim();
     if (!text || loading || cooldown > 0) return;
-    setCooldown(1); // 1 sec cooldown
+    setCooldown(1);
     setInput('');
 
-    // append user message (literal type for role)
-    const next = [...messages, { role: 'user' as const, content: text }];
+    // add user message
+    const next: Msg[] = [...messages, { role: 'user' as const, content: text }];
     setMessages(next);
     setLoading(true);
 
@@ -79,6 +79,8 @@ export default function Chat() {
       });
 
       const ctype = res.headers.get('Content-Type') || '';
+
+      // --- JSON reply path
       if (ctype.includes('application/json')) {
         const data = await res.json();
         setMessages((m) => [
@@ -89,21 +91,23 @@ export default function Chat() {
         return;
       }
 
-      // streaming
+      // --- Streaming path
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let acc = '';
-      // push empty assistant message first (literal type)
+
+      // push an empty assistant bubble to update as stream arrives
       setMessages((m) => [...m, { role: 'assistant' as const, content: '' }]);
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
         acc += decoder.decode(value, { stream: true });
+
         setMessages((m) => {
           const copy = [...m];
-          // update last message content only
-          copy[copy.length - 1] = { ...copy[copy.length - 1], content: acc } as Msg;
+          const last = copy[copy.length - 1];
+          copy[copy.length - 1] = { ...last, content: acc } as Msg;
           return copy;
         });
       }
@@ -126,7 +130,8 @@ export default function Chat() {
 
   // ---- Mic (Speech-to-Text)
   const startMic = () => {
-    const SR: any = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    const SR: any =
+      (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
     if (!SR) {
       alert('Speech Recognition not supported in this browser');
       return;
@@ -153,7 +158,9 @@ export default function Chat() {
   };
 
   const exportChat = () => {
-    const blob = new Blob([JSON.stringify(messages, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(messages, null, 2)], {
+      type: 'application/json',
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -163,15 +170,16 @@ export default function Chat() {
   };
 
   const clearChat = () => {
-    setMessages((msgs) => [msgs[0]]); // keep welcome message
+    setMessages((msgs) => [msgs[0]]);
     try {
       localStorage.removeItem(STORE_KEY);
     } catch {}
   };
 
-  const onSettingsChange = useCallback((s: { model: string; temperature: number }) => {
-    setSettings(s);
-  }, []);
+  const onSettingsChange = useCallback(
+    (s: { model: string; temperature: number }) => setSettings(s),
+    [],
+  );
 
   return (
     <div className="relative max-w-3xl mx-auto">
